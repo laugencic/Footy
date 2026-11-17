@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footy</title>
+    <link rel="stylesheet" href="{% static 'css/index.css'%}">
+</head>
+<body>
+    <h1>Hello footy fans !!!!!!!</h1>
+
+    <div id="container">
+        {% if player %}
+            <p>Name:{{player.name}}</p>
+            <p>Nationality: {{player.nationality}}</p>
+            <img src="{{player.image}}" alt="player image" width="300px">
+        {% else%}
+            <p>No data available yet</p>
+        {% endif %}
+    </div>
+
+    <div id="response">
+        <input type="text"placeholder="Player Name:">
+        <button type="submit">Check</button>
+    </div>
+</body>
+</html>

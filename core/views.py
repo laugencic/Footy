@@ -4,52 +4,107 @@ import time
 import random
 import json
 
+from .models import Player
 
-def data(request):
+# admin section (to add functionality later)
+
+def player_data(request):
+    milestones=[]
+    player_former_teams=[]
+    player_data=[]
+
+
     # #former teams using player ids , which can apply(ids) when looking up players
     former_teams=f"https://www.thesportsdb.com/api/v1/json/123/lookupformerteams.php?id=34146370"
     milestones="https://www.thesportsdb.com/api/v1/json/123/lookupmilestones.php?id=34161397"
     statistics="https://www.thesportsdb.com/api/v1/json/123/lookupplayerstats.php?id=34146304"
     team_players="https://www.thesportsdb.com/api/v1/json/123/lookup_all_players.php?id=133604"
-    player=f"https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=Lionel Messi"
 
-    sample= [
-    "Lionel Messi",
-    "Cristiano Ronaldo",
-    "Kevin De Bruyne",
-    "Johan Cruyff"
+    # handling the search player data
+
+    if request.method == 'POST':
+
+        player_name = request.POST.get('player_search', '').strip()
+
+        if not player_name:
+            return render(request, 'index.html', {
+                'error': 'Please enter a player name.'
+            })
+
+        url = 'https://www.thesportsdb.com/api/v1/json/123/searchplayers.php'
+
+        try:
+            response = requests.get(
+                url,
+                params={'p': player_name},
+                timeout=10
+            )
+
+            response.raise_for_status()
+
+            data = response.json()
+
+            players = data.get('player')
+
+            if not players:
+                return render(request, 'index.html', {
+                    'error': 'Player not found.'
+                })
+
+            general_info = players[0]
+
+            player, created = Player.objects.update_or_create(
+                player_id=general_info.get('idPlayer'),
+                defaults={
+                    'name': general_info.get('strPlayer') or '',
+                    'nationality': general_info.get('strNationality') or '',
+                    'photo': general_info.get('strCutout') or '',
+                }
+            )
+
+            message = 'Player added successfully!' if created else 'Player information updated!'
+
+            return render(request, 'index.html', {
+                'player': player,
+                'message': message
+            })
+
+        except requests.RequestException as e:
+            return render(request, 'index.html', {
+                'error': f'API connection error: {e}'
+            })
+
+        except ValueError:
+            return render(request, 'index.html', {
+                'error': 'Could not read the API response.'
+            })
+
+    return render(request, 'index.html')
    
-    ]
-
-    # request1=requests.get(player)
-
-    # player_random_info=request1.json()
-    # general_info=player_random_info['player'][0]
-
-    # player_data={
-    #     'name':general_info.get('strPlayer'),
-    #     'player_id':general_info.get('idPlayer'),
-    #     'nationality':general_info.get('strNationality'),
-    #     'image':general_info.get('strCutout')
-
-    # }
-    
-    # Extracting the former team information
-    request2=requests.get(former_teams)
-    # print(request2.json())
-
-    random_team_info=request2.json()
-    former_teams=random_team_info['formerteams']
-
-    # for team in former_teams:
-        # for key,value in team.items():
-        #     if key=='strFormerTeam':
-        #         print("former teams",value)
 
 
+def team_data(request):
+    return render(request,'team.html')
 
-    # milestones
-    request3=requests.get(milestones)
-    print(request3.json())
-    return render(request,'index.html')
 
+def randomizer(request):
+    players=Player.objects.all()
+
+    # converts the list of all players and selects one at ranmdom
+    if players.exists():
+        player=random.choice(list(players))
+
+    else:
+        player=None
+
+    return render(request,'players.html',{'player':player})
+
+def answer_checker(request):
+    if request.method=='POST':
+        answer=request.POST.get('player_answer')
+
+    if not answer:
+        return render(request, 'index.html', {
+            'error': 'Please enter a player name.'
+        })
+    return render(request,'players.html')

@@ -1,11 +1,37 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Players</title>
+    <script src="{% static 'js/players.js'%}"></script>
 </head>
 <body>
-    <h1>This is the teams section</h1>
+    <h1>This is the players section</h1>
+
+    <div id="container">
+        {% if message %}
+            <p>{{ message }}</p>
+        {% endif %}
+
+        {% if error %}
+            <p>{{ error }}</p>
+        {% endif %}
+
+        {% if player %}
+            <h2>{{ player.name }}</h2>
+            <p>{{ player.nationality }}</p>
+
+            <img src="{{ player.photo }}" width="200">
+        {% endif %}
+
+    </div>
+
+    <form method="post" id="player_answer">
+        {% csrf_token %}
+        <input type="text"placeholder='Player Name:' name="player_answer">
+        <button type="submit">Submit</button>
+    </form>
 </body>
 </html>

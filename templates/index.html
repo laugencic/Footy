@@ -11,18 +11,28 @@
     <h1>Hello footy fans !!!!!!!</h1>
 
     <div id="container">
+        {% if message %}
+            <p>{{ message }}</p>
+        {% endif %}
+
+        {% if error %}
+            <p>{{ error }}</p>
+        {% endif %}
+
         {% if player %}
-            <p>Name:{{player.name}}</p>
-            <p>Nationality: {{player.nationality}}</p>
-            <img src="{{player.image}}" alt="player image" width="300px">
-        {% else%}
-            <p>No data available yet</p>
+            <h2>{{ player.name }}</h2>
+            <p>{{ player.nationality }}</p>
+
+            <img src="{{ player.photo }}" width="200">
         {% endif %}
     </div>
 
-    <div id="response">
-        <input type="text"placeholder="Player Name:">
-        <button type="submit">Check</button>
+    <div id="updater">
+        <form method="post">
+            {% csrf_token %}
+            <input type="text"placeholder="Player Name:" name="player_search">
+            <button type="submit">Check</button>
+        </form>
     </div>
 </body>
 </html>
